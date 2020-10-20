@@ -1,0 +1,53 @@
+@page "/signup"
+@using DNP1_A1.Data
+@using DNP1_A1.Login
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IUser userService
+ <EditForm Model="@user" OnValidSubmit="@RegisterUser">
+        <div>
+            <br /><br /><br /><br /><br />
+        </div>
+        <div>
+            <h3 style="font-weight:bold; color:purple">FamiliyTree Register</h3>
+        </div>
+        <div>
+            <br />
+        </div>
+        <div class="col-12 row">
+            <input class="form-control col-12" @bind="user.username" placeholder="username" />
+        </div>
+        <br />
+        <div class="col-12 row">
+            <input type="password" class="form-control col-12" @bind="user.password" placeholder="password" />
+        </div>
+        <br />
+        <div class="col-12 row">
+            <span class="col-12"></span>
+            <input type="submit" class="form-control col-6 btn btn-primary" value="Sign up" />
+            <a href="/" class="col-6">Already an user?</a>
+        </div>
+        <br />
+        <div class="col-12 row" style="text-align:left; font-weight:bold">
+            <span class="col-12">@LoginMesssage</span>
+        </div>
+    </EditForm>
+    @code {
+
+    private User user;
+    public string LoginMesssage { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        user = new User();
+        return base.OnInitializedAsync();
+    }
+
+    private async Task<bool> RegisterUser()
+    {
+        //assume that user is valid
+        userService.AddUser(user.username,user.password,"User");
+        return await Task.FromResult(true);
+    }
+
+}

@@ -1,0 +1,122 @@
+﻿@layout LoginLayout
+@page "/"
+@using DNP1_A1.Login
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject IUser userService
+<div class="row">
+<div class="col-6 card">
+        <div class="col-12 row">
+            
+            <div class="col-6">
+                <form>
+                    <div>
+                        <br/><br/><br/><br/><br/>
+                    </div>
+                    <div>
+                        <h3 style="font-weight:bold; color:purple">FamilyTree Login</h3>
+                    </div>
+                    <div>
+                        <br/>
+                    </div>
+                    <div class="col-12 row">
+                        <input name='username' placeholder='Username' type='text' @bind-value="username">
+                    </div>
+                    <br/>
+                    <div class="col-12 row">
+                        <input name='password' placeholder='Password' type='password' @bind-value="password">
+                    </div>
+                    <br/>
+                    <div class="col-12 row">
+                        <span class="col-12"></span>
+                         <a href="" @onclick="PerformLogin">
+                        <button class="btn btn-outline-dark" type="submit">Log in</button>
+                        </a>
+                    </div>
+                    <br/>
+                </form>
+            </div>
+            <div class="col-6">
+                <img src="/images/familiy1.png" style="margin-top: 40px;" width="300px" height="300px"/>
+            </div>
+        </div>
+    </div>
+  <div class="col-6 card">
+      <EditForm Model="@user" OnValidSubmit="@RegisterUser">
+        <div>
+            <br /><br /><br /><br /><br />
+        </div>
+        <div>
+            <h3 style="font-weight:bold; color:purple">FamiliyTree Register</h3>
+        </div>
+        <div>
+            <br />
+        </div>
+        <div class="col-12 row">
+            <input class="form-control col-12" @bind="user.username" placeholder="username" />
+        </div>
+        <br />
+        <div class="col-12 row">
+            <input type="password" class="form-control col-12" @bind="user.password" placeholder="password" />
+        </div>
+        <br />
+        <a href="" @onclick="RegisterUser">
+            <button class="btn btn-outline-dark" type="submit">Sign up</button>
+             </a>
+    </EditForm>
+  </div>  
+
+</div>
+
+
+
+@code {
+    private User user;
+    private string username;
+    private string password;
+    private string errorMessage;
+    
+    protected override Task OnInitializedAsync()
+    {
+        user = new User();
+        return base.OnInitializedAsync();
+    }
+    public async Task PerformLogin()
+    {
+        errorMessage = "";
+        try
+        {
+            ((Authentication) AuthenticationStateProvider).validateLogin(username, password);
+            username = "";
+            password = "";
+            NavigationManager.NavigateTo("/main");
+        }
+        catch (Exception e)
+        {
+            errorMessage = "User is not registered";
+        }
+    }
+
+    public async Task PerformLogout()
+    {
+        errorMessage = "";
+        username = "";
+        password = "";
+        try
+        {
+            ((Authentication) AuthenticationStateProvider).LogOut();
+            NavigationManager.NavigateTo("/Login");
+        }
+        catch (Exception e)
+        {
+          errorMessage = "404 Not found";
+        }
+    }
+    private async Task<bool> RegisterUser()
+    {
+        //assume that user is valid
+        userService.AddUser(user.username,user.password,"User");
+        return await Task.FromResult(true);
+    }
+}

@@ -1,0 +1,195 @@
+﻿@page "/AdultsOverview"
+@using DNP1_A1.Models
+@using DNP1_A1.Data
+
+@inject IAdultService AdultService;
+<div class="background">
+    <h2 class="ownHeader">All the adults present in the system are displayed here</h2>
+    <h3 class="ownHeader">Search for adult </h3>
+    <p>
+        <br/><br/>By ID <input type="number" @oninput="@((arg) => FilterById(arg))" style="width: 50px"/>
+        By first name <input @oninput="@((arg) => FilterFirstName(arg))" style="width: 200px"/>
+        By last name <input @oninput="@((arg) => FilterLastName(arg))" style="width: 200px"/>
+        <br/><br/>By sex
+        <select class="form-control selectpicker" @onchange="@((arg => FilterSex(arg)))" style="width: 100px">
+            <option>All</option>
+            <option>Female</option>
+            <option>Male</option>
+            <option>Non-binary</option>
+        </select>
+    </p>
+    @if (adults == null)
+    {
+        <p>
+            <em>Loading...</em>
+        </p>
+    }
+    else if (!adults.Any())
+    {
+        <p>
+            <em>No Adults in the system. Please add some.</em>
+        </p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last name</th>
+                <th>
+                    Job Title
+                </th>
+                <th>Age</th>
+                <th>Sex</th>
+                <th>Hair color</th>
+                <th>Weight</th>
+                <th>Height</th>
+                <th>Eye color</th>
+                <AuthorizeView Policy="MustBeAdmin">
+                    <th>Remove</th>
+                </AuthorizeView>
+            </tr>
+
+            </thead>
+            <tbody>
+            @foreach (var item in toShow)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.FirstName</td>
+                    <td>@item.LastName</td>
+                    <td>
+                        @item.JobTitle
+                    </td>
+                    <td>@item.Age</td>
+                    <td>@item.Sex</td>
+                    <td>@item.HairColor</td>
+                    <td>@item.Weight</td>
+                    <td>@item.Height</td>
+                    <td>@item.EyeColor</td>
+                    <AuthorizeView Policy="MustBeAdmin">
+                        <td>
+                            <button @onclick="@((() => RemoveAdult(item.Id)))">
+                                <i class="oi oi-trash" style="color: black"/>
+                            </button>
+                        </td>
+                    </AuthorizeView>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    private IList<Adult> adults;
+    private IList<Adult> toShow;
+
+    private void FilterById(ChangeEventArgs args)
+    {
+        int? filterby = null;
+        try
+        {
+            filterby = int.Parse(args.Value.ToString());
+        }
+        catch (Exception e)
+        {
+        }
+        if (filterby != null)
+        {
+            toShow = adults.Where(t => t.Id == filterby).ToList();
+        }
+        else
+        {
+            toShow = adults;
+        }
+    }
+
+    private void FilterFirstName(ChangeEventArgs args)
+    {
+        string filterby = null;
+        try
+        {
+            filterby = args.Value.ToString();
+        }
+        catch (Exception e)
+        {
+        }
+        if (filterby != null)
+        {
+            toShow = adults.Where(t => t.FirstName.Contains(filterby)).ToList();
+        }
+        else
+        {
+            toShow = adults;
+        }
+    }
+
+    private void FilterSex(ChangeEventArgs args)
+    {
+        string filterby = null;
+        try
+        {
+            filterby = args.Value.ToString();
+        }
+        catch (Exception e)
+        {
+        }
+        if (filterby != null)
+        {
+            if (filterby.Equals("Male"))
+            {
+                toShow = adults.Where(t => t.Sex.Equals("M")).ToList();
+            }
+            else if (filterby.Equals("Female"))
+            {
+                toShow = adults.Where(t => t.Sex.Equals("F")).ToList();
+            }
+            else if (filterby.Equals("Non-binary"))
+            {
+                toShow = adults.Where(t => t.Sex.Equals("NB")).ToList();
+            }
+        }
+        else
+        {
+            toShow = adults;
+        }
+    }
+
+    private void FilterLastName(ChangeEventArgs args)
+    {
+        string? filterby = null;
+        try
+        {
+            filterby = args.Value.ToString();
+        }
+        catch (Exception e)
+        {
+        }
+        if (filterby != null)
+        {
+            toShow = adults.Where(t => t.LastName.Contains(filterby)).ToList();
+        }
+        else
+        {
+            toShow = adults;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        adults = AdultService.GetAdults();
+        toShow = adults;
+    }
+
+    private void RemoveAdult(int id)
+    {
+        Adult toREmove = adults.First(a => a.Id == id);
+        AdultService.RemoveAdult(toREmove);
+        adults.Remove(toREmove);
+    }
+
+}

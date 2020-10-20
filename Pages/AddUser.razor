@@ -1,0 +1,106 @@
+﻿@page "/AddUser"
+@using DNP1_A1.Login
+@inject IUser userService
+@inject NavigationManager NavigationManager
+<h3>Add a new user</h3>
+<div>
+
+    <EditForm Model="@userNew" OnValidSubmit="@addNew">
+        <div class="row" style="display:flex; justify-content:space-around">
+        <div class="form-group">
+            Username: <br/>
+            <InputTextArea rows="1" @bind-Value="userNew.username"></InputTextArea>
+        </div>
+        <div>
+            Password:<br/>
+            <InputTextArea rows="1" @bind-Value="userNew.password"></InputTextArea>
+        </div>
+
+        <div>
+            Role:<br/>
+            <InputTextArea rows="1" @bind-Value="userNew.Role"></InputTextArea>
+        </div>
+        </div>
+
+        <p class="actions">
+            <button class="btn btn-outline-success" type="submit">Add</button>
+        </p>
+
+
+    </EditForm>
+
+</div>
+<div>
+    @if (users == null)
+    {
+        <p>
+            <em>Loading...</em>
+        </p>
+    }
+    else if (!users.Any())
+    {
+        <p>
+            <em>No users in the system. Please add some.</em>
+        </p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+
+            <tr>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Role</th>
+                <th>Remove</th>
+
+            </tr>
+
+            </thead>
+            @foreach (var item in users)
+            {
+                <tbody>
+
+                <tr>
+                    <td>@item.username</td>
+                    <td>@item.password</td>
+                    <td>@item.Role</td>
+
+
+                    <td>
+                        <button @onclick="@((() => RemoveAdult(item.username)))">
+                            <i class="oi oi-trash" style="color: black"/>
+                        </button>
+                    </td>
+
+                </tr>
+
+                </tbody>
+            }
+        </table>
+    }
+</div>
+
+@code {
+    private User userNew = new User();
+    private List<User> users;
+
+    private void addNew()
+    {
+        userService.AddUser(userNew.username, userNew.password, userNew.Role);
+        NavigationManager.NavigateTo("/");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = userService.getUsers();
+    }
+
+    private void RemoveAdult(string username)
+    {
+        User toRemove = users.First(a => a.username == username);
+        userService.RemoveUser(toRemove);
+        users.Remove(toRemove);
+    }
+
+}
